@@ -1,4 +1,12 @@
-import { createApp } from 'vue';
-/* import PublicComponent from './components/BackofficeComponent.vue';
+import { createApp } from "vue";
+import LoginPage from "./pages/LoginPage.vue";
 
-createApp(PublicComponent).mount('#backoffice-app') */
+function mountVueComponent() {
+  const loginElement = document.getElementById("login-page");
+
+  if (loginElement) {
+    createApp(LoginPage).mount(loginElement);
+  }
+}
+
+mountVueComponent();
