@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: AnimalRepository::class)]
 class Animal
@@ -14,24 +15,31 @@ class Animal
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['animal_detail'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['animal_detail'])]
     private ?string $nom = null;
 
     #[ORM\Column]
+    #[Groups(['animal_detail'])]
     private ?int $age = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['animal_detail'])]
     private ?string $description = null;
 
     #[ORM\Column]
+    #[Groups(['animal_detail'])]
     private ?float $prixTTC = null;
 
     #[ORM\ManyToOne(inversedBy: 'animals')]
+    #[Groups(['animal_detail'])]
     private ?AnimalType $type = null;
 
     #[ORM\ManyToOne(inversedBy: 'animals')]
+    #[Groups(['animal_detail'])]
     private ?StatutVente $statut = null;
 
     /**
@@ -39,6 +47,10 @@ class Animal
      */
     #[ORM\OneToMany(targetEntity: AnimalPhoto::class, mappedBy: 'animal')]
     private Collection $photos;
+
+    #[ORM\ManyToOne(inversedBy: 'animals')]
+    #[Groups(['animal_detail'])]
+    private ?AnimalRace $race = null;
 
     public function __construct()
     {
@@ -148,6 +160,18 @@ class Animal
                 $photo->setAnimal(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getRace(): ?AnimalRace
+    {
+        return $this->race;
+    }
+
+    public function setRace(?AnimalRace $race): static
+    {
+        $this->race = $race;
 
         return $this;
     }
