@@ -142,6 +142,19 @@
           </select>
         </div>
 
+        <div class="mt-4">
+          <label for="photos">Photos</label>
+          <input
+            type="file"
+            name="photos"
+            id="photos"
+            accept="image/png, image/jpeg"
+            class="border-2 border-black w-full p-1"
+            @change="addPhoto"
+            multiple
+          />
+        </div>
+
         <div class="mt-4 flex justify-end gap-3">
           <button
             type="button"
@@ -195,6 +208,11 @@ export default {
           id: 0,
           nom: null,
         },
+        photos: [],
+      },
+      photo: {
+        id: 0,
+        nom: null,
       },
     };
   },
@@ -233,20 +251,23 @@ export default {
       }
     },
     async createAnimal() {
+      const form = new FormData();
+
+      form.append("nom", this.animal.nom);
+      form.append("age", this.animal.age);
+      form.append("description", this.animal.description);
+      form.append("prixTTC", this.animal.prixTTC);
+      form.append("type", this.animal.type.id);
+      form.append("race", this.animal.race.id);
+      form.append("statut", this.animal.statut.id);
+
+      for (let i = 0; i < this.animal.photos.length; i++) {
+        form.append("photos[]", this.animal.photos[i]);
+      }
+
       const response = await fetch("/api/animal/create", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          nom: this.animal.nom,
-          age: this.animal.age,
-          description: this.animal.description,
-          prixTTC: this.animal.prixTTC,
-          type: this.animal.type.id,
-          race: this.animal.race.id,
-          statut: this.animal.statut.id,
-        }),
+        body: form,
       });
 
       if (!response.ok) {
@@ -257,21 +278,24 @@ export default {
       }
     },
     async editAnimal() {
+      const form = new FormData();
+
+      form.append("id", this.animal.id);
+      form.append("nom", this.animal.nom);
+      form.append("age", this.animal.age);
+      form.append("description", this.animal.description);
+      form.append("prixTTC", this.animal.prixTTC);
+      form.append("type", this.animal.type.id);
+      form.append("race", this.animal.race.id);
+      form.append("statut", this.animal.statut.id);
+
+      for (let i = 0; i < this.animal.photos.length; i++) {
+        form.append("photos[]", this.animal.photos[i]);
+      }
+
       const response = await fetch("/api/animal/edit", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id: this.animal.id,
-          nom: this.animal.nom,
-          age: this.animal.age,
-          description: this.animal.description,
-          prixTTC: this.animal.prixTTC,
-          type: this.animal.type.id,
-          race: this.animal.race.id,
-          statut: this.animal.statut.id,
-        }),
+        body: form,
       });
 
       if (!response.ok) {
@@ -387,6 +411,9 @@ export default {
 
       this.errorMessage = null;
       this.toggleForm();
+    },
+    async addPhoto(event) {
+      this.animal.photos = event.target.files;
     },
   },
   components: {

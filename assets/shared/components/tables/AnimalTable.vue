@@ -38,6 +38,13 @@
           <th
             scope="col"
             class="p-2 text-start cursor-pointer"
+            @click="sortBy('photos')"
+          >
+            Photos
+          </th>
+          <th
+            scope="col"
+            class="p-2 text-start cursor-pointer"
             @click="sortBy('type')"
           >
             Type
@@ -78,6 +85,15 @@
           <td class="p-2">{{ animal.age }}</td>
           <td class="p-2">
             {{ animal.description }}
+          </td>
+          <td class="p-2">
+            <ul>
+              <li v-for="photo of animal.photos">
+                <a :href="`/uploads/photos/${photo.nom}`" target="_blank" class="text-blue-500 underline hover:text-blue-400">{{
+                  photo.nom
+                }}</a>
+              </li>
+            </ul>
           </td>
           <td class="p-2">
             {{ animal.type.nom }}

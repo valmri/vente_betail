@@ -3,6 +3,7 @@
 namespace App\Controller\API;
 
 use App\Entity\Animal;
+use App\Entity\AnimalPhoto;
 use App\Repository\AnimalRaceRepository;
 use App\Repository\AnimalRepository;
 use App\Repository\AnimalTypeRepository;
@@ -15,6 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class AnimalController extends AbstractController
 {
@@ -53,34 +55,53 @@ class AnimalController extends AbstractController
         StatutVenteRepository $statutVenteRepository,
         SerializerInterface $serializer
     ): JsonResponse {
-        $data = json_decode($request->getContent(), true);
 
-        if (!isset($data['type'], $data['race'], $data['nom'], $data['age'], $data['description'], $data['prixTTC'], $data['statut'])) {
-            return $this->json(['message' => 'Données manquantes'], 400);
-        }
+        $nom = $request->get('nom');
+        $age = $request->get('age');
+        $description = $request->get('description');
+        $prixTTC = $request->get('prixTTC');
+        $type = $request->get('type');
+        $race = $request->get('race');
+        $statut = $request->get('statut');
 
-        $type = $animalTypeRepository->find($data['type']);
-        $race = $animalRaceRepository->find($data['race']);
-        $statutVente = $statutVenteRepository->find($data['statut']);
+        $type = $animalTypeRepository->find((int)$type);
+        $race = $animalRaceRepository->find((int)$race);
+        $statut = $statutVenteRepository->find((int)$statut);
 
         if (!$type) {
-            return new JsonResponse(['message' => 'Type non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+            return $this->json(['message' => 'Type non trouvé'], 400);
         }
 
         if (!$race) {
-            return new JsonResponse(['message' => 'Race non trouvée'], JsonResponse::HTTP_NOT_FOUND);
+            return $this->json(['message' => 'Race non trouvée'], 400);
         }
 
         $animal = new Animal();
-        $animal->setNom($data['nom'])
-            ->setAge($data['age'])
-            ->setDescription($data['description'])
-            ->setPrixTTC($data['prixTTC'])
+        $animal->setNom($nom)
+            ->setAge($age)
+            ->setDescription($description)
+            ->setPrixTTC($prixTTC)
             ->setType($type)
             ->setRace($race)
-            ->setStatut($statutVente);
+            ->setStatut($statut);
 
-        // Persister et sauvegarder
+        $entityManager->persist($animal);
+        $entityManager->flush();
+
+        /** @var UploadedFile[] $photos */
+        $photos = $request->files->get('photos');
+        if ($photos) {
+            foreach ($photos as $photoFile) {
+                $photo = new AnimalPhoto();
+                $fileName = uniqid() . '.' . $photoFile->guessExtension();
+
+                $photoFile->move($this->getParameter('photos_directory'), $fileName);
+
+                $photo->setNom($fileName);
+                $animal->addPhoto($photo);
+            }
+        }
+
         $entityManager->persist($animal);
         $entityManager->flush();
 
@@ -100,15 +121,24 @@ class AnimalController extends AbstractController
         AnimalRepository $animalRepository,
         SerializerInterface $serializer
     ): JsonResponse {
-        $data = json_decode($request->getContent(), true);
 
-        if (!isset($data['type'], $data['race'], $data['nom'], $data['age'], $data['description'], $data['prixTTC'], $data['statut'], $data['id'])) {
-            return $this->json(['message' => 'Données manquantes'], 200);
+        $id = $request->get('id');
+        $nom = $request->get('nom');
+        $age = $request->get('age');
+        $description = $request->get('description');
+        $prixTTC = $request->get('prixTTC');
+        $type = $request->get('type');
+        $race = $request->get('race');
+        $statut = $request->get('statut');
+
+        $animal = $animalRepository->find((int)$id);
+        if (!$animal) {
+            return $this->json(['message' => 'Animal non trouvée'], 400);
         }
 
-        $type = $animalTypeRepository->find((int)$data['type']);
-        $race = $animalRaceRepository->find((int)$data['race']);
-        $statut = $statutVenteRepository->find((int)$data['statut']);
+        $type = $animalTypeRepository->find((int)$type);
+        $race = $animalRaceRepository->find((int)$race);
+        $statut = $statutVenteRepository->find((int)$statut);
 
         if (!$type) {
             return $this->json(['message' => 'Type non trouvé'], 400);
@@ -118,14 +148,27 @@ class AnimalController extends AbstractController
             return $this->json(['message' => 'Race non trouvée'], 400);
         }
 
-        $animal = $animalRepository->find($data['id']);
-        $animal->setNom($data['nom'])
-            ->setAge($data['age'])
-            ->setDescription($data['description'])
-            ->setPrixTTC($data['prixTTC'])
+        $animal->setNom($nom)
+            ->setAge($age)
+            ->setDescription($description)
+            ->setPrixTTC($prixTTC)
             ->setType($type)
             ->setRace($race)
             ->setStatut($statut);
+
+        /** @var UploadedFile[] $photos */
+        $photos = $request->files->get('photos');
+        if ($photos) {
+            foreach ($photos as $photoFile) {
+                $photo = new AnimalPhoto();
+                $fileName = uniqid() . '.' . $photoFile->guessExtension();
+
+                $photoFile->move($this->getParameter('photos_directory'), $fileName);
+
+                $photo->setNom($fileName);
+                $animal->addPhoto($photo);
+            }
+        }
 
         $entityManager->persist($animal);
         $entityManager->flush();

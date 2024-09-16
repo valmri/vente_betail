@@ -45,7 +45,8 @@ class Animal
     /**
      * @var Collection<int, AnimalPhoto>
      */
-    #[ORM\OneToMany(targetEntity: AnimalPhoto::class, mappedBy: 'animal')]
+    #[ORM\OneToMany(targetEntity: AnimalPhoto::class, mappedBy: 'animal', cascade: ['persist'])]
+    #[Groups(['animal_detail'])]
     private Collection $photos;
 
     #[ORM\ManyToOne(inversedBy: 'animals')]
