@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Backoffice;
+namespace App\Controller\backoffice;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
