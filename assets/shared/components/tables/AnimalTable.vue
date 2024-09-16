@@ -89,9 +89,12 @@
           <td class="p-2">
             <ul>
               <li v-for="photo of animal.photos">
-                <a :href="`/uploads/photos/${photo.nom}`" target="_blank" class="text-blue-500 underline hover:text-blue-400">{{
-                  photo.nom
-                }}</a>
+                <a
+                  :href="`/uploads/photos/${photo.nom}`"
+                  target="_blank"
+                  class="text-blue-500 underline hover:text-blue-400"
+                  >{{ photo.nom }}</a
+                >
               </li>
             </ul>
           </td>
@@ -230,6 +233,16 @@ export default {
                 nom: animal.statut.nom,
               },
             };
+
+            if (!Array.isArray(this.animaux[index].photos)) {
+              this.animaux[index].photos = [];
+            }
+
+            animal.photos.forEach((item) => {
+              this.animaux[index].photos.push({
+                nom: item.nom,
+              });
+            });
           }
         });
       } else {
